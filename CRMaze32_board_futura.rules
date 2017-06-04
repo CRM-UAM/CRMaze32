@@ -1,0 +1,83 @@
+
+(rules PCB CRMaze32_board_futura
+  (snap_angle 
+    fortyfive_degree
+  )
+  (autoroute_settings
+    (fanout off)
+    (autoroute on)
+    (postroute on)
+    (vias on)
+    (via_costs 50)
+    (plane_via_costs 5)
+    (start_ripup_costs 100)
+    (start_pass_no 4737)
+    (layer_rule F.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.4)
+    )
+    (layer_rule B.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 1.7)
+    )
+  )
+  (rule
+    (width 250.0)
+    (clear 200.2)
+    (clear 125.0 (type smd_to_turn_gap))
+    (clear 50.0 (type smd_smd))
+  )
+  (padstack "Via[0-1]_600:400_um"
+    (shape
+      (circle F.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle B.Cu 600.0 0.0 0.0)
+    )
+    (attach off)
+  )
+  (via 
+    "Via[0-1]_600:400_um" "Via[0-1]_600:400_um" default
+  )
+  (via 
+    "Via[0-1]_600:400_um-kicad_default" "Via[0-1]_600:400_um" "kicad_default"
+  )
+  (via_rule
+    default "Via[0-1]_600:400_um"
+  )
+  (via_rule
+    "kicad_default" "Via[0-1]_600:400_um-kicad_default"
+  )
+  (class default
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 250.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+  (class "kicad_default"
+    AGND 5V "Net-(1k101-Pad2)" "GPIO_LED1" "Net-(1k102-Pad2)" "GPIO_LED2" "Net-(1k103-Pad2)" "GPIO_LED3"
+    "Net-(1k104-Pad2)" "Net-(2.8ohm101-Pad1)" "Net-(2.8ohm101-Pad2)" "Net-(2.8ohm102-Pad1)" "Net-(2.8ohm102-Pad2)" "Net-(10ohm101-Pad1)" "Net-(10ohm101-Pad2)" "Net-(10ohm102-Pad1)"
+    "Net-(10ohm102-Pad2)" A5V "BUZZER_CONTROL" V3.3 GND VBAT "Net-(C107-Pad1)" VA3.3
+    "Net-(D109-Pad1)" "Net-(D112-Pad1)" MGND OUTZ "Net-(P103-Pad1)" "Net-(P103-Pad3)" "ENC_1_A" "ENC_1_B"
+    "ENC_2_A" "ENC_2_B" "Net-(P108-Pad1)" "Net-(P108-Pad2)" "Net-(P109-Pad1)" "Net-(P109-Pad2)" "Net-(SW101-Pad2)" "Net-(SW102-Pad1)"
+    "M1_EN" "M1_DIR" "M2_EN" "M2_DIR" "GPIO_IR_FR" "GPIO_IR_SIDE" "GPIO_IR_DIAG" "GPIO_BUZZER"
+    "GPIO_IR_FL" "Net-(J101-Pad2)" "Net-(J102-Pad2)" "IN_IR6" "IN_IR5" "IN_IR4" "IN_IR3" "IN_IR2"
+    "IN_IR1"
+    (clearance_class "kicad_default")
+    (via_rule kicad_default)
+    (rule
+      (width 250.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+)
