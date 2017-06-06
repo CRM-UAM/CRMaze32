@@ -229,7 +229,7 @@ F 3 "" H 4200 4550 60  0001 C CNN
 $EndComp
 Text GLabel 2750 9250 1    60   Input ~ 0
 VA3.3
-Text GLabel 1650 10350 0    60   Input ~ 0
+Text GLabel 1600 10250 0    60   Input ~ 0
 GND
 Text GLabel 1900 9850 0    60   Input ~ 0
 GND
@@ -922,9 +922,9 @@ Text GLabel 5100 5150 3    60   Input ~ 0
 GPIO_LED2
 Text GLabel 5000 5150 3    60   Input ~ 0
 GPIO_LED1
-Text GLabel 5550 3350 2    60   Input ~ 0
-M1_EN
 Text GLabel 5550 3450 2    60   Input ~ 0
+M1_EN
+Text GLabel 5550 3350 2    60   Input ~ 0
 M1_DIR
 Text GLabel 5550 3750 2    60   Input ~ 0
 M2_EN
@@ -1098,14 +1098,14 @@ Wire Notes Line
 Wire Notes Line
 	11350 2650 15650 2650
 Wire Wire Line
-	1750 10300 1950 10300
+	1700 10200 2150 10200
 Wire Wire Line
-	1750 10300 1750 10450
+	1700 10200 1700 10350
 Wire Wire Line
-	1750 10450 2050 10450
+	1700 10350 2000 10350
 Wire Wire Line
-	1650 10350 1750 10350
-Connection ~ 1750 10350
+	1600 10250 1700 10250
+Connection ~ 1700 10250
 Wire Notes Line
 	3700 10800 1200 10800
 Wire Notes Line
@@ -1407,17 +1407,6 @@ F 3 "" H 2700 9550 50  0000 C CNN
 	1    2700 9550
 	0    1    1    0   
 $EndComp
-$Comp
-L CONN_01X05 P101
-U 1 1 592C8D5B
-P 2350 10000
-F 0 "P101" H 2350 10300 50  0000 C CNN
-F 1 "GYRO_ADXRS_2" V 2450 10000 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x05" H 2350 10000 50  0001 C CNN
-F 3 "" H 2350 10000 50  0000 C CNN
-	1    2350 10000
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	2150 9800 2050 9800
 Wire Wire Line
@@ -1432,14 +1421,6 @@ Wire Wire Line
 	2000 9900 2150 9900
 Wire Wire Line
 	1900 10000 2150 10000
-Wire Wire Line
-	1950 10300 1950 10100
-Wire Wire Line
-	1950 10100 2150 10100
-Wire Wire Line
-	2150 10200 2050 10200
-Wire Wire Line
-	2050 10200 2050 10450
 Wire Wire Line
 	2500 9250 2600 9250
 Wire Wire Line
@@ -1567,4 +1548,20 @@ Wire Wire Line
 	14700 3350 14700 3250
 Wire Wire Line
 	15400 3350 15400 3250
+$Comp
+L CONN_01X06 J103
+U 1 1 593738C8
+P 2350 10050
+F 0 "J103" H 2350 10400 50  0000 C CNN
+F 1 "GYRO_ADXRS_2" V 2450 10050 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x06" H 2350 10050 50  0001 C CNN
+F 3 "" H 2350 10050 50  0001 C CNN
+	1    2350 10050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2150 10300 2000 10300
+Wire Wire Line
+	2000 10300 2000 10350
+NoConn ~ 2150 10100
 $EndSCHEMATC
