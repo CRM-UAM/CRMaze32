@@ -914,11 +914,11 @@ Text GLabel 5550 4150 2    60   Input ~ 0
 M2_DIR
 Text GLabel 3700 4400 0    60   Output ~ 0
 ENC_1_A
-Text GLabel 3700 4500 0    60   Output ~ 0
-ENC_1_B
-Text GLabel 3700 4600 0    60   Output ~ 0
-ENC_2_A
 Text GLabel 5550 3350 2    60   Output ~ 0
+ENC_1_B
+Text GLabel 3700 4500 0    60   Output ~ 0
+ENC_2_A
+Text GLabel 3700 4600 0    60   Output ~ 0
 ENC_2_B
 NoConn ~ 5550 3850
 $Comp
