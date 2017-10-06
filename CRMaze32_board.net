@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source /Users/victoruceda/Proyectos/CRMaze32/CRMaze32_board.sch)
-    (date "viernes, 06 '06e' octubre '06e' 2017, 17:47:41")
+    (date "viernes, 06 '06e' octubre '06e' 2017, 19:22:50")
     (tool "Eeschema 4.0.6")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
