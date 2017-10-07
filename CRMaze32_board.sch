@@ -238,7 +238,7 @@ Text GLabel 1900 9700 0    60   Input ~ 0
 Text GLabel 1900 10000 0    60   Output ~ 0
 OUTZ
 Text GLabel 2500 9250 1    60   Input ~ 0
-AGND
+GND
 Text GLabel 3000 9250 1    60   Input ~ 0
 A5V
 Text Notes 1300 8950 0    60   ~ 0
@@ -270,9 +270,7 @@ VA3.3
 Text GLabel 10200 9100 1    60   Input ~ 0
 V3.3
 Text GLabel 4300 10400 3    60   Input ~ 0
-MGND
-Text GLabel 11300 10400 3    60   Input ~ 0
-AGND
+GND
 $Comp
 L R R501
 U 1 1 58D6A081
@@ -631,7 +629,7 @@ M2_DIR
 Text GLabel 13550 9100 0    60   Input ~ 0
 V3.3
 Text GLabel 14550 8500 2    60   Input ~ 0
-MGND
+GND
 Text GLabel 14550 8600 2    60   Input ~ 0
 VBAT
 NoConn ~ 14550 9100
@@ -640,7 +638,7 @@ B) MOTOR DRIVER POLOLU
 Text GLabel 11800 2850 0    60   Input ~ 0
 VA3.3
 Text GLabel 15400 3700 3    60   Input ~ 0
-AGND
+GND
 $Comp
 L GND #PWR01
 U 1 1 58D906D9
@@ -1724,4 +1722,6 @@ $EndComp
 Connection ~ 9050 1250
 Connection ~ 9050 1550
 Connection ~ 5850 10050
+Text GLabel 11300 10400 3    60   Input ~ 0
+GND
 $EndSCHEMATC
