@@ -83,7 +83,7 @@ extern long rightEncoderCount;
 extern double maxSpeed;
 extern double moveSpeed;
 
-#define N_TEL 950
+#define N_TEL 1050
 extern int countData;
 extern double dataTime[N_TEL];
 extern double data1[N_TEL];
@@ -110,7 +110,7 @@ double needToDecelerate(int32_t dist, int16_t curSpd, int16_t endSpd);
 
 void aligmentFrontWall();
 
-void moveOneCell();
+void moveOneCell(short isExploring);
 void giro180();
 void giro90r();
 void giro90l();

@@ -246,6 +246,8 @@ int readParedes(int robotDir){
       return getParedes(robotDir,  w);
 }
 
+short isExploring=1;
+
 void loop() {
   // put your main code here, to run repeatedly:
 //delay(1000);
@@ -254,20 +256,9 @@ while(1){
 
       //FFloop();
       //aligmentFrontWall();
-      R90();
-      R90();
-      R90();
-      R90();
-      delay(1500);
-      R180();
-      delay(1000);
-      L180f();
-      delay(500);
       countData=0;
-      L180f();
-      delay(200);
-      L90f();
-      L90();
+      moveOneCell(0);
+      delay(100);
            while(1){
             timerAlarmDisable(timer);
             resetSpeedProfile();
@@ -325,11 +316,11 @@ countData=0;
  while(1){
 
 
-      moveOneCell();
+      moveOneCell(isExploring);
       //moveOneCell();
       R90();
       moveSpeed=0;
-      moveOneCell();
+      moveOneCell(isExploring);
  delay(50000);
  }
 
@@ -393,7 +384,7 @@ void loopPrintGyro(){
 
 void loopIdaYVuelta(){
       for(int k=0;k<4;k++){
-            moveOneCell();
+            moveOneCell(isExploring);
             delay(1000);
             giro180();
             delay(1000);
@@ -411,7 +402,7 @@ void doMovement(int nextMovement){
             R180();
       }
 
-      moveOneCell();
+      moveOneCell(isExploring);
 
 }
 

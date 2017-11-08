@@ -78,8 +78,8 @@ int distanceLeft = 0;
 int sensorError = 0;
 
 //CONSTANTS - CONFIG
-double kpX = 0.5, kdX = 28;
-double kpW = 0.45, kdW = 35;
+double kpX = 1.5, kdX = 28; //0.55 ; 28
+double kpW = 0.9, kdW = 23;
 //10:1                  double kpX = 0.6, kdX = 25;
 //10:1                  double kpW = 1.9, kdW = 60;
 //double kpW = 0.55, kdW = 19;//used in straight
@@ -88,8 +88,8 @@ double kpW = 0.45, kdW = 35;
 //double kdW1 = 26;
 //double kpW2 = 1;//used for T2 in curve turn
 //double kdW2 = 36;
-double accX = 0.35;//0.15;//6m/s/s
-double decX = 0.35;//0.15;
+double accX = 0.3;//0.15;//6m/s/s
+double decX = 0.3;//0.15;
 double accW = 0.4; //cm/s^2
 double decW = 0.4;
 
@@ -98,7 +98,7 @@ double turnSpeed = speed_to_counts(0.27*2);  //1m/s
 double frontAligmentSpeed = speed_to_counts(0.05*2);
 //int returnSpeed = speed_to_counts(1.0*2); //1m/s
 //int stopSpeed = speed_to_counts(0.2*2); //0.2m/s
-double maxSpeed = speed_to_counts(0.27*2);     //4m/s
+double maxSpeed = speed_to_counts(0.3*2);     //4m/s
 
 double gyroFeedbackRatio = 12.25;//5700;//5900;
 int a_scale = 20; //configured
@@ -114,7 +114,8 @@ int thRightWall = 500;
 int thLeftWall = 500;
 
 //Longitudinal calibration
-#define LONGITUDINAL_CALIBRATION
+//#define NO_DEC_IF_STRAIGHT
+//#define LONGITUDINAL_CALIBRATION
 int hasWallDRSensorValue = 1000; //to be configured //min value to determine that there is wall in the DR sensor
 int hasWallDLSensorValue = 1000; //to be configured //min value to determine that there is wall in the DL sensor
 int diaRightWallFadingOffValue = 700; //to be configured //max value to determine if there is not wall in the DR sensor
@@ -485,7 +486,7 @@ void calculateMotorPwm(void) // encoder PD controller
   setLeftPwm(leftBaseSpeed); //setLeftPwm( (LFvalue2 - LFSensor)/7);
   setRightPwm(rightBaseSpeed); //setRightPwm( (RFvalue2 - RFSensor)/ 7);
 
-
+//if(countSpeedProfile%2)
      if(countData < N_TEL){
        dataTime[countData]=micros();
        data1[countData]=rightEncoderChange;
@@ -493,8 +494,8 @@ void calculateMotorPwm(void) // encoder PD controller
        data3[countData]=curSpeedW;
        data4[countData]=curSpeedX;
        data5[countData]=gyroFeedback;
-       data6[countData]= SRSensor;//leftBaseSpeed;
-       data7[countData]= SLSensor; //rightBaseSpeed;
+       data6[countData]= needToDecelerate(distanceLeft, curSpeedX, moveSpeed);//SRSensor;//leftBaseSpeed;
+       data7[countData]= distanceLeft;//SLSensor; //rightBaseSpeed;
        data8[countData]=encoderFeedbackW;
  //      data9[countData]=rightBaseSpeed;
 
@@ -502,7 +503,7 @@ void calculateMotorPwm(void) // encoder PD controller
        countData++;
      }
 
- //  countSpeedProfile++;
+   countSpeedProfile++;
 }
 
 
@@ -552,11 +553,11 @@ double needToDecelerate(int32_t dist, int16_t curSpd, int16_t endSpd)//speed are
   if (dist<0) dist = 1;//-dist;
   if (dist == 0) dist = 1;  //prevent divide by 0
   int t_ms = ceil(((curSpd-endSpd)*1.0)/(double)(speed_to_counts(decX*2)/100));
-  return (curSpd*t_ms - ((double)(speed_to_counts(decX*2)/100)*t_ms*t_ms)/2. );
+  return (curSpd*t_ms - ((double)(speed_to_counts(decX*2)/100)*t_ms*t_ms)/2. )*1.2;
 
 
+//  return ( abs(  (((double)(curSpd))*((double)(curSpd)) - ((double)(endSpd))*((double)(endSpd)))/(dist)/2.0)); //dist_counts_to_mm(dist)/2);
 
-  return ( abs(  (((double)(curSpd))*((double)(curSpd)) - ((double)(endSpd))*((double)(endSpd)))/(dist)/2.0)); //dist_counts_to_mm(dist)/2);
   //calculate deceleration rate needed with input distance, input current speed and input targetspeed to determind if the deceleration is needed
   //use equation 2*a*S = Vt^2 - V0^2  ==>  a = (Vt^2-V0^2)/2/S
   //because the speed is the sum of left and right wheels(which means it's doubled), that's why there is a "/4" in equation since the square of 2 is 4
@@ -588,7 +589,7 @@ sample code for straight movement
 
 bool hasRightWall=false;
 bool hasLeftWall=false;
-void moveOneCell(){
+void moveOneCell(short isExploring){
   //enable_sensor(),
   //enable_gyro();
   //enable_PID();
@@ -615,7 +616,7 @@ void moveOneCell(){
     //   data8[countData]=needToDecelerate(distanceLeft, curSpeedX, moveSpeed); //posErrorW;
     //   countData++;
     // }
-    if( distanceLeft < 2136 && ffRunned==0){
+    if( distanceLeft < 2136 && ffRunned==0 && isExploring==1){
             ffRunned=1;
             xTaskCreatePinnedToCore(FFtask, "FF",10000,NULL, 0,NULL,0);
     }
@@ -640,11 +641,16 @@ void moveOneCell(){
     if(needToDecelerate(distanceLeft, curSpeedX, moveSpeed) < distanceLeft){
             targetSpeedX = maxSpeed;
     }else{
-      if(ffRunned!=0 && runningFF==0 && getNextMovement(xRobot,yRobot,robotDir)==STRAIGHT){
+
+      #ifdef NO_DEC_IF_STRAIGHT
+      if( ((ffRunned!=0 && runningFF==0) || !isExploring) && getNextMovement(xRobot,yRobot,robotDir)==STRAIGHT){
             targetSpeedX = maxSpeed;
       }else{
             targetSpeedX = moveSpeed;
       }
+      #else
+            targetSpeedX = moveSpeed;
+      #endif
 
     }
 
