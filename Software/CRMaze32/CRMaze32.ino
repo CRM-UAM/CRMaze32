@@ -201,7 +201,9 @@ void printIRSensors(){
       Serial.print(SRSensor);Serial.print(" ");
       Serial.print(SLSensor);Serial.print(" ");
       Serial.print(DLSensor);Serial.print(" ");
-      Serial.print(LFSensor);
+      Serial.print(LFSensor);Serial.print(" ");
+      getSensorEror();
+      Serial.print(sensorError/a_scale);
       Serial.println("");
 }
 
@@ -252,12 +254,26 @@ void loop() {
   // put your main code here, to run repeatedly:
 //delay(1000);
 
+// while(1){
+//       Serial.begin(115200);
+//       printIRSensors();
+//       delay(100);
+// }
+
 while(1){
 
-      //FFloop();
+      FFloop();
       //aligmentFrontWall();
       countData=0;
       moveOneCell(0);
+      delay(500);
+      // countData=0;
+      // L90();
+      // delay(500);
+      // moveOneCell(0);
+      // delay(500);
+      // R90();
+      // moveOneCell(0);
       delay(100);
            while(1){
             timerAlarmDisable(timer);

@@ -32,7 +32,7 @@ int targetSpeedX = 0;
 int targetSpeedW = 0;
 short onlyUseGyroFeedback = 0;
 short useFrontSensor = 0;
-short useEncGyroFeedback =0;
+short useEncGyroFeedback = 0;
 short onlyUseEncoderFeedback = 0;
 int DLSensor = 0; //Last IR - DL sensor mesure
 int DRSensor = 0; //Last IR - DR sensor mesure
@@ -102,20 +102,21 @@ double maxSpeed = speed_to_counts(0.3*2);     //4m/s
 
 double gyroFeedbackRatio = 12.25;//5700;//5900;
 int a_scale = 20; //configured
-int f_scale = 320;//configured
+int f_scale = 400;//configured
 
 int DLMiddleValue = 835; //configured
 int DRMiddleValue = 835; //configured
 
-int SLMiddleValue = 1300; //configured
-int SRMiddleValue = 1180; //configured
+int SLMiddleValue = 1100; //configured
+int SRMiddleValue = 1600; //configured
 
 int thRightWall = 500;
 int thLeftWall = 500;
 
 //Longitudinal calibration
+#define ALIGMENT_ONE_WALL
 //#define NO_DEC_IF_STRAIGHT
-//#define LONGITUDINAL_CALIBRATION
+#define LONGITUDINAL_CALIBRATION
 int hasWallDRSensorValue = 1000; //to be configured //min value to determine that there is wall in the DR sensor
 int hasWallDLSensorValue = 1000; //to be configured //min value to determine that there is wall in the DL sensor
 int diaRightWallFadingOffValue = 700; //to be configured //max value to determine if there is not wall in the DR sensor
@@ -392,12 +393,14 @@ void getSensorEror(){
   else if(SRSensor > SRMiddleValue && SLSensor < SLMiddleValue && RFSensor<RFvalue1*0.4)
     sensorError = SRSensor - SRMiddleValue;
   else{
-      if( SRSensor < thRightWall &&  SLSensor > thLeftWall){ //pared en la izq y NO en la der
-            sensorError = (SLMiddleValue - SLSensor)/3;
-      }else if( SLSensor < thLeftWall &&  SRSensor > thRightWall){ //pared en la derecha y NO en la izq
-            sensorError = (SRSensor - SRMiddleValue)/3;
-      }else
-            sensorError = 0;
+      #ifdef ALIGMENT_ONE_WALL
+            if( SRSensor < thRightWall &&  SLSensor > thLeftWall){ //pared en la izq y NO en la der
+                  sensorError = (SLMiddleValue - SLSensor)/5;
+            }else if( SLSensor < thLeftWall &&  SRSensor > thRightWall){ //pared en la derecha y NO en la izq
+                  sensorError = (SRSensor - SRMiddleValue)/5;
+            }else
+      #endif
+                  sensorError = 0;
   }
 }
 
@@ -486,7 +489,7 @@ void calculateMotorPwm(void) // encoder PD controller
   setLeftPwm(leftBaseSpeed); //setLeftPwm( (LFvalue2 - LFSensor)/7);
   setRightPwm(rightBaseSpeed); //setRightPwm( (RFvalue2 - RFSensor)/ 7);
 
-//if(countSpeedProfile%2)
+if(countSpeedProfile%10)
      if(countData < N_TEL){
        dataTime[countData]=micros();
        data1[countData]=rightEncoderChange;
@@ -494,8 +497,8 @@ void calculateMotorPwm(void) // encoder PD controller
        data3[countData]=curSpeedW;
        data4[countData]=curSpeedX;
        data5[countData]=gyroFeedback;
-       data6[countData]= needToDecelerate(distanceLeft, curSpeedX, moveSpeed);//SRSensor;//leftBaseSpeed;
-       data7[countData]= distanceLeft;//SLSensor; //rightBaseSpeed;
+       data6[countData]= sensorFeedback;//SRSensor;//leftBaseSpeed;
+       data7[countData]= rotationalFeedback;//SLSensor; //rightBaseSpeed;
        data8[countData]=encoderFeedbackW;
  //      data9[countData]=rightBaseSpeed;
 
@@ -628,13 +631,13 @@ void moveOneCell(short isExploring){
              hasLeftWall = true;
       if(SRSensor < diaRightWallFadingOffValue &&  hasRightWall == true){
              hasRightWall = false;
-             playNoteNoDelay(700,150);
-             distanceLeft = speed_to_counts(100*2);
+             playNoteNoDelay(600,150);
+             distanceLeft = speed_to_counts(150*2);
       }
       if(SLSensor < diaLeftWallFadingOffValue &&  hasLeftWall == true){
              hasLeftWall = false;
              playNoteNoDelay(850,150);
-             distanceLeft = speed_to_counts(90*2);
+             distanceLeft = speed_to_counts(155*2);
       }
 #endif
 //    if(needToDecelerate(distanceLeft, curSpeedX, moveSpeed) < ((double)speed_to_counts(decX*2)/100.0)){
@@ -656,7 +659,8 @@ void moveOneCell(short isExploring){
 
     //there is something else you can add here. Such as detecting falling edge of post to correct longitudinal position of mouse when running in a straight path
   }while( ( distanceLeft > 0 && LFSensor < LFvalue2+1 && RFSensor < RFvalue2+1));//use encoder to finish 180mm movement if no front walls
-aligmentFrontWall();
+
+      //aligmentFrontWall();
 
 
   targetSpeedX = moveSpeed;

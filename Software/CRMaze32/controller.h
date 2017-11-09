@@ -124,6 +124,9 @@ void L180f();
 
 void resetSpeedProfile();
 
+void  getSensorEror();
+extern int sensorError;
+extern int a_scale;
 
 void speedProfile();
 void calculateMotorPwm();
