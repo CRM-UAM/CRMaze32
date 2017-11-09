@@ -44,6 +44,7 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 //       delay(1000);
 // }
 //
+
 void configMode(){
   int mode1=0;
   long curl = millis();
@@ -55,13 +56,21 @@ void configMode(){
       }
       allLedsOff();
       delay(100);
-
   }
 
   if(mode1){
-      maxSpeed = speed_to_counts(0.8*2);
+      EEPROM_load_maze();
+      playNoteNoDelay(1000,500);
+      initializeMinDistances();
+      delay(1000);
+      // Serial.begin(115200);
+      // initializeDistancesIniGoal();
+      // printMaze(0,0,1);
+      // while(1){
+
+      // }
   }else{
-      maxSpeed = speed_to_counts(0.3*2);
+      initializeDistancesCenterGoal();
   }
 }
 
@@ -125,6 +134,7 @@ void setup() {
   //gyro pin setup
   adcAttachPin(GYRO);
 
+
   //IR pins setup
   adcAttachPin(I_IR_F_L);
   adcAttachPin(I_IR_F_R);
@@ -151,9 +161,11 @@ void setup() {
   ledcSetup(0, 2000, 8);
   ledcAttachPin(BUZZER_PIN, 0);
 
+
+
   playNoteNoDelay(DO,1000);
   for(int _=0;_<4;_++){allLedsOn();delay(125);allLedsOff();delay(125);}
-//  configMode();
+  configMode();
 
   //encoder_setup();
   //xTaskCreatePinnedToCore(coreTask, "encoders",10000,NULL, 0,NULL,0);
@@ -203,7 +215,7 @@ void printIRSensors(){
       Serial.print(DLSensor);Serial.print(" ");
       Serial.print(LFSensor);Serial.print(" ");
       getSensorEror();
-      Serial.print(sensorError/a_scale);
+      Serial.print(aSpeed);
       Serial.println("");
 }
 
@@ -235,7 +247,7 @@ int getParedes(int robotDir, int w){
 
 int readParedes(int robotDir){
       int w=0;
-      if(LFSensor > 450 && RFSensor > 450){
+      if(LFSensor > 400 && RFSensor > 400){
             w |= UP_DIR;
       }
       if(SLSensor > 650){
@@ -261,14 +273,16 @@ void loop() {
 // }
 
 while(1){
-
       FFloop();
       //aligmentFrontWall();
-      countData=0;
-      moveOneCell(0);
-      delay(500);
+      //countData=0;
+      //moveOneCell(0);
+      //moveOneCell(0);
+      //moveOneCell(0);
+      //delay(500);
       // countData=0;
-      // L90();
+       onlyUseGyroFeedback = 1;
+       L90();
       // delay(500);
       // moveOneCell(0);
       // delay(500);
@@ -408,14 +422,21 @@ void loopIdaYVuelta(){
 }
 
 void doMovement(int nextMovement){
+      countData=0;
        if(nextMovement==TURN_RIGHT){
+            delay(100);
             R90();
+            delay(100);
       }
        if(nextMovement==TURN_LEFT){
+            delay(100);
             L90();
+            delay(100);
       }
       if(nextMovement==BACK){
+            delay(100);
             R180();
+            delay(100);
       }
 
       moveOneCell(isExploring);
@@ -449,13 +470,10 @@ void FFloop(){
       xRobot = 0;
       yRobot = 15;
       countData = 0;
-      initializeDistancesCenterGoal();
+
       xTaskCreatePinnedToCore(FFtask, "FF",10000,NULL, 0,NULL,0);
       while(distances[xRobot][yRobot]>0){
 
-//           Serial.print("Tiempo FF Upd: ");Serial.println(t);
-//           Serial.print("Cont FF Upd: ");Serial.println(cont);
-//            printMaze(xPos,yPos,dir);
             xSemaphoreTake(barrierSemaphore, portMAX_DELAY);
             short nextMovement = getNextMovement(xRobot,yRobot,robotDir);
             digitalWrite(LED_F,HIGH);
@@ -463,11 +481,8 @@ void FFloop(){
             yRobot += yIncrementByDir(robotDir);
             xRobot += xIncrementByDir(robotDir);
             doMovement(nextMovement);
+            digitalWrite(LED_F,LOW);
 
-            //Serial.print("New pos: ");Serial.print(xPos);Serial.print(" ");Serial.print(yPos);Serial.print(" ");Serial.println(dir);
-            //printMaze(xPos,yPos,dir);
-            // long curl = millis();
-            // while(millis()<curl+500){
                   if(readButton()){
                         Serial.begin(115200);
                         while(1){
@@ -479,11 +494,11 @@ void FFloop(){
                               delay(2000);
                         }
                   }
-            //       delay(1);
-            // }
-
       }
-      for(int u=0;u<5;u++){
+
+      EEPROM_save_maze();
+
+      for(int u=0;u<3;u++){
 
             digitalWrite(LED_F,HIGH);
             playNote(DO, 200);
@@ -495,10 +510,53 @@ void FFloop(){
       }
 
 
+      initializeDistancesIniGoal();
+      xTaskCreatePinnedToCore(FFtask, "FF",10000,NULL, 0,NULL,0);
+      while(distances[xRobot][yRobot]>0){
+            xSemaphoreTake(barrierSemaphore, portMAX_DELAY);
+            short nextMovement = getNextMovement(xRobot,yRobot,robotDir);
+            digitalWrite(LED_F,HIGH);
+            robotDir = updateDir(robotDir,nextMovement);
+            yRobot += yIncrementByDir(robotDir);
+            xRobot += xIncrementByDir(robotDir);
+            doMovement(nextMovement);
+            digitalWrite(LED_F,LOW);
+
+                  if(readButton()){
+                        Serial.begin(115200);
+                        while(1){
+                              timerAlarmDisable(timer);
+                              resetSpeedProfile();
+                              printMaze(xRobot,yRobot,robotDir);
+                              delay(100);
+                              sendTelData();
+                              delay(2000);
+                        }
+                  }
+      }
+
+
 
       //Serial.println("COME BACK:");
       //initializeDistancesIniGoal();
       //
+
+
+
+      EEPROM_save_maze();
+      R180();
+      robotDir = updateDir(robotDir,BACK);
+      for(int u=0;u<1;u++){
+
+            digitalWrite(LED_F,HIGH);
+            playNote(DO, 200);
+            playNote(MI, 200);
+            playNote(SOL, 200);
+            playNote(DO*2, 400);
+            digitalWrite(LED_F,LOW);
+            delay(1000);
+      }
+
       Serial.begin(115200);
                         while(1){
                               timerAlarmDisable(timer);
@@ -506,5 +564,4 @@ void FFloop(){
                               printMaze(xRobot,yRobot,robotDir);
                               delay(2000);
                         }
-
 }

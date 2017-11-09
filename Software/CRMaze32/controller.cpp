@@ -98,29 +98,29 @@ double turnSpeed = speed_to_counts(0.27*2);  //1m/s
 double frontAligmentSpeed = speed_to_counts(0.05*2);
 //int returnSpeed = speed_to_counts(1.0*2); //1m/s
 //int stopSpeed = speed_to_counts(0.2*2); //0.2m/s
-double maxSpeed = speed_to_counts(0.3*2);     //4m/s
+double maxSpeed = speed_to_counts(0.2*2);     //4m/s
 
 double gyroFeedbackRatio = 12.25;//5700;//5900;
-int a_scale = 20; //configured
+int a_scale = 25; //configured
 int f_scale = 400;//configured
 
 int DLMiddleValue = 835; //configured
 int DRMiddleValue = 835; //configured
 
-int SLMiddleValue = 1100; //configured
-int SRMiddleValue = 1600; //configured
+int SLMiddleValue = 1350; //configured
+int SRMiddleValue = 1680; //configured
 
 int thRightWall = 500;
 int thLeftWall = 500;
 
 //Longitudinal calibration
 #define ALIGMENT_ONE_WALL
-//#define NO_DEC_IF_STRAIGHT
+#define NO_DEC_IF_STRAIGHT
 #define LONGITUDINAL_CALIBRATION
-int hasWallDRSensorValue = 1000; //to be configured //min value to determine that there is wall in the DR sensor
-int hasWallDLSensorValue = 1000; //to be configured //min value to determine that there is wall in the DL sensor
+int hasWallDRSensorValue = 1300; //to be configured //min value to determine that there is wall in the DR sensor
+int hasWallDLSensorValue = 1200; //to be configured //min value to determine that there is wall in the DL sensor
 int diaRightWallFadingOffValue = 700; //to be configured //max value to determine if there is not wall in the DR sensor
-int diaLeftWallFadingOffValue = 600; //to be configured //max value to determine if there is not wall in the DL sensor
+int diaLeftWallFadingOffValue = 560; //to be configured //max value to determine if there is not wall in the DL sensor
 
 //LFvalues1 and RFvalues1 are the front wall sensor threshold when the center of mouse between the boundary of the cells.
 int LFvalue2 = 2410; //configured
@@ -295,10 +295,7 @@ void readIRsensors(){
   SRSensor = analogRead(I_IR_LAT_L) - SRSensor;
   DLSensor = analogRead(I_IR_DIA_R) - DLSensor;
   digitalWrite(O_IR_DIA,LOW);
-  if(DLSensor < 0)
-    DLSensor = 0;
-  if(SRSensor < 0)
-    SRSensor = 0;
+
   elapseMicros(170,curt);
 
 //right front sensor
@@ -307,8 +304,7 @@ void readIRsensors(){
   elapseMicros(240,curt);
   RFSensor = analogRead(I_IR_F_R) - RFSensor;
   digitalWrite(O_IR_F_R,LOW);
-  if(RFSensor < 0)
-    RFSensor = 0;
+
   elapseMicros(340,curt);
 
 
@@ -320,10 +316,7 @@ void readIRsensors(){
   DRSensor = analogRead(I_IR_DIA_L) - DRSensor;
   SLSensor = analogRead(I_IR_LAT_R) - SLSensor;
   digitalWrite(O_IR_LAT,LOW);
-  if(SLSensor < 0)
-    SLSensor = 0;
-  if(DRSensor < 0)
-    DRSensor = 0;
+
   elapseMicros(520,curt);
 
 //left front sensor
@@ -332,9 +325,24 @@ void readIRsensors(){
   elapseMicros(600,curt);
   LFSensor = analogRead(I_IR_F_L) - LFSensor;
   digitalWrite(O_IR_F_L,LOW);
+
+  //elapseMicros(680,curt);
+  //
+  //
+  //
+  //
+  if(DLSensor < 0)
+    DLSensor = 0;
+  if(SRSensor < 0)
+    SRSensor = 0;
   if(LFSensor < 0)//error check
     LFSensor = 0;
-  //elapseMicros(680,curt);
+  if(SLSensor < 0)
+    SLSensor = 0;
+  if(DRSensor < 0)
+    DRSensor = 0;
+  if(RFSensor < 0)
+    RFSensor = 0;
 }
 
 void getEncoderStatus(void)
@@ -388,19 +396,23 @@ void updateCurrentSpeed(void)
 
 
 void getSensorEror(){
-  if(SLSensor > SLMiddleValue && SRSensor < SRMiddleValue && LFSensor<LFvalue1*0.4)
+  if(SLSensor > SLMiddleValue && SRSensor < SRMiddleValue && LFSensor<LFvalue1*0.4){
     sensorError = SLMiddleValue - SLSensor;
-  else if(SRSensor > SRMiddleValue && SLSensor < SLMiddleValue && RFSensor<RFvalue1*0.4)
+    digitalWrite(LED_L,HIGH);
+  }else if(SRSensor > SRMiddleValue && SLSensor < SLMiddleValue && RFSensor<RFvalue1*0.4){
     sensorError = SRSensor - SRMiddleValue;
-  else{
+      digitalWrite(LED_R,HIGH);
+  }else{
       #ifdef ALIGMENT_ONE_WALL
-            if( SRSensor < thRightWall &&  SLSensor > thLeftWall){ //pared en la izq y NO en la der
-                  sensorError = (SLMiddleValue - SLSensor)/5;
-            }else if( SLSensor < thLeftWall &&  SRSensor > thRightWall){ //pared en la derecha y NO en la izq
-                  sensorError = (SRSensor - SRMiddleValue)/5;
+            if( SRSensor < thRightWall &&  SLSensor > thLeftWall && DRSensor>150 && LFSensor<LFvalue1*0.4){ //pared en la izq y NO en la der
+                  sensorError = (SLMiddleValue - SLSensor)/4;
+            }else if( SLSensor < thLeftWall &&  SRSensor > thRightWall && DLSensor>150 && RFSensor<RFvalue1*0.4){ //pared en la derecha y NO en la izq
+                  sensorError = (SRSensor - SRMiddleValue)/4;
             }else
       #endif
                   sensorError = 0;
+                  digitalWrite(LED_R,LOW);
+                  digitalWrite(LED_L,LOW);
   }
 }
 
@@ -469,7 +481,7 @@ void calculateMotorPwm(void) // encoder PD controller
       rotationalFeedback = (encoderFeedbackW + gyroFeedback)/2;
   }
   else
-    rotationalFeedback = (1*encoderFeedbackW + 3*gyroFeedback + sensorFeedback)/5;
+    rotationalFeedback = (1*encoderFeedbackW + 3*gyroFeedback + 3*sensorFeedback)/7;
       //if you use IR sensor as well, the line above will be rotationalFeedback = encoderFeedbackW + gyroFeedback + sensorFeedback;
       //make sure to check the sign of sensor error.
 
@@ -489,7 +501,7 @@ void calculateMotorPwm(void) // encoder PD controller
   setLeftPwm(leftBaseSpeed); //setLeftPwm( (LFvalue2 - LFSensor)/7);
   setRightPwm(rightBaseSpeed); //setRightPwm( (RFvalue2 - RFSensor)/ 7);
 
-if(countSpeedProfile%10)
+if(countSpeedProfile%5)
      if(countData < N_TEL){
        dataTime[countData]=micros();
        data1[countData]=rightEncoderChange;
@@ -497,8 +509,8 @@ if(countSpeedProfile%10)
        data3[countData]=curSpeedW;
        data4[countData]=curSpeedX;
        data5[countData]=gyroFeedback;
-       data6[countData]= sensorFeedback;//SRSensor;//leftBaseSpeed;
-       data7[countData]= rotationalFeedback;//SLSensor; //rightBaseSpeed;
+       data6[countData]= DRSensor;//sensorFeedback;//SRSensor;//leftBaseSpeed;
+       data7[countData]= DLSensor;//rotationalFeedback;//SLSensor; //rightBaseSpeed;
        data8[countData]=encoderFeedbackW;
  //      data9[countData]=rightBaseSpeed;
 
@@ -567,8 +579,8 @@ double needToDecelerate(int32_t dist, int16_t curSpd, int16_t endSpd)//speed are
 }
 
 void aligmentFrontWall(){
-      while( (LFSensor < LFvalue1 && LFSensor > LFvalue2)//if has front wall, make the mouse finish this 180mm with sensor threshold only
-        || (RFSensor < RFvalue1 && RFSensor > RFvalue2)
+      while( (LFSensor < LFvalue1 && LFSensor > LFvalue2*0.8)//if has front wall, make the mouse finish this 180mm with sensor threshold only
+        || (RFSensor < RFvalue1 && RFSensor > RFvalue2*0.8)
   ){
       digitalWrite(LED_F,HIGH);
       targetSpeedX = frontAligmentSpeed;
@@ -590,9 +602,10 @@ void aligmentFrontWall(){
 sample code for straight movement
 */
 
+
+void moveOneCell(short isExploring){
 bool hasRightWall=false;
 bool hasLeftWall=false;
-void moveOneCell(short isExploring){
   //enable_sensor(),
   //enable_gyro();
   //enable_PID();
@@ -601,7 +614,7 @@ void moveOneCell(short isExploring){
   targetSpeedX = moveSpeed;
   distanceLeft= ONE_CELL_DISTANCE - (encoderCount-oldEncoderCount);
   int ffRunned=0;
-  digitalWrite(LED_F,LOW);
+ // digitalWrite(LED_F,LOW);
   do{
     /*you can call int needToDecelerate(int32_t dist, int16_t curSpd, int16_t endSpd)
     here with current speed and distanceLeft to decide if you should start to decelerate or not.*/
@@ -619,7 +632,7 @@ void moveOneCell(short isExploring){
     //   data8[countData]=needToDecelerate(distanceLeft, curSpeedX, moveSpeed); //posErrorW;
     //   countData++;
     // }
-    if( distanceLeft < 2136 && ffRunned==0 && isExploring==1){
+    if( distanceLeft < 1500 && ffRunned==0 && isExploring==1){
             ffRunned=1;
             xTaskCreatePinnedToCore(FFtask, "FF",10000,NULL, 0,NULL,0);
     }
@@ -658,9 +671,9 @@ void moveOneCell(short isExploring){
     }
 
     //there is something else you can add here. Such as detecting falling edge of post to correct longitudinal position of mouse when running in a straight path
-  }while( ( distanceLeft > 0 && LFSensor < LFvalue2+1 && RFSensor < RFvalue2+1));//use encoder to finish 180mm movement if no front walls
+  }while( ( distanceLeft > 0 && LFSensor < LFvalue1+1 && RFSensor < RFvalue1+1));//use encoder to finish 180mm movement if no front walls
 
-      //aligmentFrontWall();
+      aligmentFrontWall();
 
 
   targetSpeedX = moveSpeed;

@@ -359,8 +359,8 @@ void initializeDistancesIniGoal(){
             }
       enqueuePointer=1;
       dequeuePointer=0;
-      distances[0][0]=0;
-      enqueueCell(CellToStack(0,0));
+      distances[0][15]=0;
+      enqueueCell(CellToStack(0,15));
 
       updateDistancesWithQueue();
 

@@ -61,4 +61,6 @@ void updateCurrentWalls(short xRobot, short yRobot, short wallsRobot);
 
 void printMaze(short xRobot, short yRobot, short dirRobot);
 
+void initializeMinDistances();
+
 #endif
