@@ -78,8 +78,8 @@ int distanceLeft = 0;
 int sensorError = 0;
 
 //CONSTANTS - CONFIG
-double kpX = 1.5, kdX = 28; //0.55 ; 28
-double kpW = 0.9, kdW = 23;
+double kpX = 1.2, kdX = 28; //0.55 ; 28
+double kpW = 0.7, kdW = 36;
 //10:1                  double kpX = 0.6, kdX = 25;
 //10:1                  double kpW = 1.9, kdW = 60;
 //double kpW = 0.55, kdW = 19;//used in straight
@@ -98,20 +98,22 @@ double turnSpeed = speed_to_counts(0.27*2);  //1m/s
 double frontAligmentSpeed = speed_to_counts(0.05*2);
 //int returnSpeed = speed_to_counts(1.0*2); //1m/s
 //int stopSpeed = speed_to_counts(0.2*2); //0.2m/s
-double maxSpeed = speed_to_counts(0.2*2);     //4m/s
+double maxSpeed = speed_to_counts(0.25*2);     //4m/s
 
 double gyroFeedbackRatio = 12.25;//5700;//5900;
-int a_scale = 25; //configured
+int a_scale = 40; //configured
 int f_scale = 400;//configured
+
+short inMiddleCell = 0;
 
 int DLMiddleValue = 835; //configured
 int DRMiddleValue = 835; //configured
 
-int SLMiddleValue = 1350; //configured
-int SRMiddleValue = 1680; //configured
+int SLMiddleValue = 1550; //configured
+int SRMiddleValue = 1480; //configured
 
-int thRightWall = 500;
-int thLeftWall = 500;
+int thRightWall = 1000;
+int thLeftWall = 1000;
 
 //Longitudinal calibration
 #define ALIGMENT_ONE_WALL
@@ -396,6 +398,11 @@ void updateCurrentSpeed(void)
 
 
 void getSensorEror(){
+      if(!inMiddleCell){
+            sensorError = sensorError/2;
+            return;
+      }
+
   if(SLSensor > SLMiddleValue && SRSensor < SRMiddleValue && LFSensor<LFvalue1*0.4){
     sensorError = SLMiddleValue - SLSensor;
     digitalWrite(LED_L,HIGH);
@@ -403,16 +410,19 @@ void getSensorEror(){
     sensorError = SRSensor - SRMiddleValue;
       digitalWrite(LED_R,HIGH);
   }else{
+      sensorError = 0;
+      digitalWrite(LED_R,LOW);
+      digitalWrite(LED_L,LOW);
       #ifdef ALIGMENT_ONE_WALL
-            if( SRSensor < thRightWall &&  SLSensor > thLeftWall && DRSensor>150 && LFSensor<LFvalue1*0.4){ //pared en la izq y NO en la der
-                  sensorError = (SLMiddleValue - SLSensor)/4;
-            }else if( SLSensor < thLeftWall &&  SRSensor > thRightWall && DLSensor>150 && RFSensor<RFvalue1*0.4){ //pared en la derecha y NO en la izq
-                  sensorError = (SRSensor - SRMiddleValue)/4;
-            }else
+                  if( SRSensor < thRightWall &&  SLSensor > thLeftWall  && LFSensor<LFvalue1*0.4){ //pared en la izq y NO en la der
+                        sensorError = (SLMiddleValue - SLSensor);
+                        digitalWrite(LED_L,HIGH);
+                  }else if( SLSensor < thLeftWall &&  SRSensor > thRightWall  && RFSensor<RFvalue1*0.4){ //pared en la derecha y NO en la izq
+                        sensorError = (SRSensor - SRMiddleValue);
+                        digitalWrite(LED_R,HIGH);
+                  }
       #endif
-                  sensorError = 0;
-                  digitalWrite(LED_R,LOW);
-                  digitalWrite(LED_L,LOW);
+
   }
 }
 
@@ -509,8 +519,8 @@ if(countSpeedProfile%5)
        data3[countData]=curSpeedW;
        data4[countData]=curSpeedX;
        data5[countData]=gyroFeedback;
-       data6[countData]= DRSensor;//sensorFeedback;//SRSensor;//leftBaseSpeed;
-       data7[countData]= DLSensor;//rotationalFeedback;//SLSensor; //rightBaseSpeed;
+       data6[countData]=sensorFeedback;//SRSensor;//leftBaseSpeed;
+       data7[countData]=rotationalFeedback;//SLSensor; //rightBaseSpeed;
        data8[countData]=encoderFeedbackW;
  //      data9[countData]=rightBaseSpeed;
 
@@ -632,9 +642,17 @@ bool hasLeftWall=false;
     //   data8[countData]=needToDecelerate(distanceLeft, curSpeedX, moveSpeed); //posErrorW;
     //   countData++;
     // }
-    if( distanceLeft < 1500 && ffRunned==0 && isExploring==1){
+    if( distanceLeft < 2000 && ffRunned==0 && isExploring==1){
             ffRunned=1;
             xTaskCreatePinnedToCore(FFtask, "FF",10000,NULL, 0,NULL,0);
+    }
+
+    if( distanceLeft > speed_to_counts(120*2) && distanceLeft < speed_to_counts(185*2)){
+      inMiddleCell=0;
+      digitalWrite(LED_F,LOW);
+    }else{
+      inMiddleCell=1;
+      digitalWrite(LED_F,HIGH);
     }
 
 #ifdef LONGITUDINAL_CALIBRATION

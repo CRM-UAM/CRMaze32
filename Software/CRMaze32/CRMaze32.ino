@@ -45,6 +45,26 @@ portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 // }
 //
 
+void configMode2(){
+  int mode1=0;
+  long curl = millis();
+  while(curl+1000 > millis()){
+      allLedsOn();
+      delay(100);
+      if(readButton()==1){ //button presed
+            mode1=1;
+      }
+      allLedsOff();
+      delay(100);
+  }
+
+  if(mode1){
+      maxSpeed = speed_to_counts(0.5*2);
+  }else{
+
+  }
+}
+
 void configMode(){
   int mode1=0;
   long curl = millis();
@@ -63,6 +83,7 @@ void configMode(){
       playNoteNoDelay(1000,500);
       initializeMinDistances();
       delay(1000);
+      configMode2();
       // Serial.begin(115200);
       // initializeDistancesIniGoal();
       // printMaze(0,0,1);
@@ -273,16 +294,22 @@ void loop() {
 // }
 
 while(1){
-      FFloop();
+      //FFloop();
       //aligmentFrontWall();
       //countData=0;
-      //moveOneCell(0);
-      //moveOneCell(0);
+      countData=0;
+      moveOneCell(1);
+      moveOneCell(1);
+      moveOneCell(1);
+      delay(1000);
+      R90();
+      delay(1000);
+      moveOneCell(1);
       //moveOneCell(0);
       //delay(500);
       // countData=0;
        onlyUseGyroFeedback = 1;
-       L90();
+       //L90();
       // delay(500);
       // moveOneCell(0);
       // delay(500);
@@ -498,7 +525,7 @@ void FFloop(){
 
       EEPROM_save_maze();
 
-      for(int u=0;u<3;u++){
+      for(int u=0;u<1;u++){
 
             digitalWrite(LED_F,HIGH);
             playNote(DO, 200);
@@ -565,3 +592,6 @@ void FFloop(){
                               delay(2000);
                         }
 }
+
+
+
